@@ -54,7 +54,7 @@ void meltdown(void* addr, uint32_t* size){
 	printf("=========================\n");
 }
 
-uint64_t get_time(char *addr){
+uint64_t get_time(void *addr){
 	__asm__ __volatile__(
 		"rdtscp\n"
 		"shl	$32, %rdx\n"
