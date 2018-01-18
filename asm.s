@@ -1,11 +1,5 @@
 .intel_syntax noprefix
 
-/*
-.global _start
-	_start:
-		mov eax, eax
-*/
-
 .global speculate
 	speculate:
 		mfence
@@ -27,5 +21,3 @@
 		movd eax, xmm0
 		lea rsp, [rsp+rax+8]
 		ret # Actually returns from speculate, but predicted as returning from herring 
-
-.section .note.GNU-stack, "", @progbits

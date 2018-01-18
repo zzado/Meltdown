@@ -7,6 +7,5 @@ all : $(TARGET)
 $(TARGET) : $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
 
-
 clean : 
 	rm -rf $(TARGET) $(TARGET).o
