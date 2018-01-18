@@ -1,14 +1,12 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <immintrin.h>
-#include <unistd.h>
 #include <string.h>
-#include <sys/syscall.h>
+#include <unistd.h>
 #define PAGE_SIZE 4096
 #define ARR_SIZE 256
 
-void speculate(char* target, char* detector);
+void speculate(void* target_addr, void* L1);
 uint8_t leak_cache(void* target_addr, void* L1);
 void meltdown(void* addr, uint32_t* size);
 uint64_t get_time(void *addr);
